@@ -1,0 +1,65 @@
+; =================================
+; version 1 key-code display on one 7-seg
+;         digit
+;          x  x  x  x  
+;          8  9  x  x
+;          4  5  6  7
+;          0  1  2  3
+;    Xs: non-decimal 7-seg patterns
+; =================================
+; port 1 for keypad scanning
+;   P1: 0-3 output for column scanning
+;   P1: 4-7 input for row reading
+; port 2 for using one digit of 7-seg LED
+org   0
+             mov  sp, #50H
+             mov  P2, #0FFH
+col0:    	 mov  R6, #0
+			 mov  P1, #0FEH
+             mov  A, P1
+             orl    A, #0FH
+             swap  A
+             cpl   A
+             jnz   keycoding    
+col1:    	 mov  R6, #1
+			 mov  P1, #0FDH
+             mov  A, P1
+             orl    A, #0FH
+             swap  A
+             cpl   A
+             jnz   keycoding
+col2:    	 mov  R6, #2
+			 mov  P1, #0FBH
+             mov  A, P1
+             orl    A, #0FH
+             swap  A
+             cpl    A
+             jnz    keycoding
+col3:    	 mov  R6, #3
+			 mov  P1, #0F7H
+             mov  A, P1
+             orl    A, #0FH
+             swap  A
+             cpl   A
+             jz    col0
+keycoding:      ; A: 0-9,A,B,C,D,E F
+rr     A
+anl    A, #0FH
+jnb    ACC.2, cont
+mov   A, #3
+cont:    jz     cont2
+   		 mov   R7, A
+   		 clr     A
+cont1:   add    A, #4
+         djnz    R7, cont1
+cont2:   add    A, R6
+display:           ; when A>9 ???
+         orl     A, #0E0H
+         mov    P2, A
+         jmp    col0
+end
+; ============================= 
+
+
+
+ 

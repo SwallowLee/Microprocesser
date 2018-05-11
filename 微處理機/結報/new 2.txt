@@ -1,0 +1,94 @@
+; =================================
+; version 2 key-code display on two 7-seg
+;        digits
+;          12  13  14  15
+;          08  09  10  11
+;          04  05  06  07
+;          00  01  02  03
+; =================================
+; port 1 for keypad scanning
+;   P1: 0-3 output for column scanning
+;   P1: 4-7 input for row reading
+; port 2 for using two digits of 7-seg LED
+org   0
+             mov  sp, #50H
+             mov  R7, #15
+             mov  P2, #0FFH
+col0:        mov  R6, #0
+             mov  P1, #0FEH
+             mov  A, P1
+             orl    A, #0FH
+             swap  A
+             cpl   A
+             jnz   keycoding
+             call   display    ; ==??==
+col1:        mov  R6, #1
+             mov  P1, #0FDH
+             mov  A, P1
+             orl    A, #0FH
+             swap  A
+             cpl   A
+             jnz   keycoding
+             call   display   ; ==??==
+col2:        mov   R6, #2
+             mov  P1, #0FBH
+             mov  A, P1
+             orl    A, #0FH
+             swap  A
+             cpl   A
+             jnz    keycoding
+             call   display    ; ==??==
+col3:        mov   R6, #3
+             mov  P1, #0F7H
+             mov  A, P1
+             orl    A, #0FH
+             swap  A
+             cpl   A
+             jz    col0
+keycoding:      ; A: 0-9,A,B,C,D,E F
+rr     A
+anl   A, #0FH
+jnb    ACC.2, cont
+mov   A, #3
+cont:    jz     cont2
+         mov   R7, A
+         clr     A
+cont1:   add    A, #4
+         djnz    R7, cont1
+cont2:   add    A, R6
+         mov   R7, A
+         call    display  ; ==??==
+         jmp    col0
+display:
+            push    PSW
+            push    ACC
+            push    0F0H  ; push B??
+            mov    A, R7
+            mov    B, #10
+            div     AB
+            anl     A, #0FH
+            orl     A, #0D0H
+            mov    P2, A
+            call     delay
+            mov    A, B
+            anl     A, #0FH
+            orl     A, #0E0H
+            mov    P2, A
+            call     delay
+            pop     0F0H
+            pop     ACC
+            pop     PSW
+            ret
+delay:  push    2
+        push   3
+        mov   R2, #20
+xxx:    mov   R3, #250
+        djnz   r3, $
+        djnz   r2, xxx
+        pop   3
+        pop   2
+        ret
+            
+     end
+; =============================
+ 
